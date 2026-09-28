@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palworld Favorites by Element</title>
+<style>
+:root{--bg:#f4f1ec;--ink:#1e2430}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,sans-serif;padding:24px 16px 48px}
+main{max-width:720px;margin:0 auto}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{margin:0 0 20px;color:#5b6270}
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cell{aspect-ratio:1;border:0;border-radius:14px;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px;font:inherit;min-width:0}
+.cell:focus-visible,.pick:focus-visible,.act:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.cell .el{font-weight:700}
+.cell img{flex:1;min-height:0;max-width:100%;object-fit:contain}
+.cell .nm{font-size:.85rem;font-weight:600;min-height:1.2em;text-align:center}
+.cell .plus{flex:1;display:grid;place-items:center;opacity:.8;font-size:2.4rem}
+.bar{display:flex;gap:10px;margin-top:16px}
+.act{padding:10px 18px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.act.ghost{background:none;color:var(--ink)}
+footer{margin-top:28px;font-size:.8rem;color:#5b6270}
+dialog{border:0;border-radius:16px;padding:16px;width:min(680px,94vw);max-height:86vh}
+dialog::backdrop{background:rgba(20,24,32,.55)}
+.dh{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.dh h2{margin:0;font-size:1.2rem;flex:none}
+.dh input{flex:1;min-width:0;padding:8px 10px;border:2px solid #cfc9bf;border-radius:8px;font:inherit}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;overflow:auto;max-height:60vh}
+.pick{border:2px solid #e2ddd4;background:#faf8f5;border-radius:10px;padding:6px;cursor:pointer;font:inherit;font-size:.78rem;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pick img{width:72px;height:72px;object-fit:contain}
+.pick:hover{border-color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+<h1>My favorite Pals by element</h1>
+<p class="sub">Tap a square to choose your favorite. Dual-element Pals show up under both elements.</p>
+<div id="grid"></div>
+<div class="bar">
+  <button class="act" id="dl">Download image</button>
+  <button class="act ghost" id="reset">Clear all</button>
+</div>
+<footer>Unofficial fan project. Pal artwork and names belong to Pocket Pair, Inc.</footer>
+</main>
+
+<dialog id="dlg">
+  <div class="dh">
+    <h2 id="dt"></h2>
+    <input id="q" type="search" placeholder="Search Pals" aria-label="Search Pals">
+    <button class="act ghost" id="clr">Clear</button>
+    <button class="act ghost" id="x" aria-label="Close">Close</button>
+  </div>
+  <div class="list" id="list"></div>
+</dialog>
+
+<script>
+// N Neutral, F Fire, W Water, G Grass, E Electric, I Ice, O Ground, D Dark, R Dragon (first letter = primary element)
+const EL={N:['Neutral','#8f8677'],F:['Fire','#e5533d'],W:['Water','#3b86d8'],G:['Grass','#4fae5a'],E:['Electric','#d99a00'],I:['Ice','#4aa8c9'],O:['Ground','#a3733b'],D:['Dark','#5a4a78'],R:['Dragon','#b53a6b']};
+const ORDER='NFWGEIODR';
+const RAW=`Aegidron:RO,Amione:W,Anubis:O,Arsox:F,Astegon:RD,Azurmane:E,Azurobe:WR,Azurobe Cryst:IR,Bakemi:D,Bastigor:I,Beakon:E,Beakon Cryst:I,Beegarde:G,Bellanoir:D,Bellanoir Libero:D,Blazamut:F,Blazamut Ryu:RF,Blazehowl:F,Blazehowl Noct:FD,Braloha:GO,Bristla:G,Broncherry:G,Broncherry Aqua:GW,Bulldosu:O,Bushi:F,Bushi Noct:FD,Caprity:G,Caprity Noct:D,Carnibora:G,Cattiva:N,Cawgnito:D,Celaray:W,Celaray Lux:WE,Celesdir:N,Celesdir Noct:D,Chikipi:N,Chillet:IR,Chillet Ignis:FR,Cinnamoth:G,Clovee:GN,Cremis:N,Croajiro:W,Croajiro Noct:WD,Cryolinx:I,Cryolinx Terra:O,Daedream:D,Dandilord:GD,Dazemu:O,Dazzi:E,Dazzi Noct:DE,Depresso:D,Digtoise:O,Dinossom:GR,Dinossom Lux:ER,Direhowl:N,Dogen:N,Dualith:OG,Dualith Noct:OD,Dumud:OW,Dumud Gild:OW,Dupin:F,Dynamoff:E,Eidrolon:RD,Eidrolon Ignis:RF,Eikthyrdeer:N,Eikthyrdeer Terra:O,Elgrove:G,Elgrove Cryst:I,Elizabee:G,Elphidran:R,Elphidran Aqua:RW,Faleris:F,Faleris Aqua:W,Felbat:D,Fenglope:N,Fenglope Lux:E,Finsider:W,Finsider Ignis:WF,Flambelle:F,Flaracle:F,Flopie:G,Foxcicle:I,Foxparks:F,Foxparks Cryst:I,Frostallion:I,Frostallion Noct:D,Frostplume:I,Fuack:W,Fuack Ignis:WF,Fuddler:O,Galeclaw:N,Ghangler:DW,Ghangler Ignis:FW,Gildane:O,Gildra:DO,Gloopie:WD,Gloopie Primo:WN,Gobfin:W,Gobfin Ignis:F,Gorirat:N,Gorirat Terra:O,Grintale:N,Grizzbolt:E,Gumoss:GO,Hangyu:O,Hangyu Cryst:I,Hartalis:N,Helzephyr:D,Helzephyr Lux:DE,Herbil:GN,Hoocrates:D,Hoodle:D,Icelyn:I,Incineram:FD,Incineram Noct:D,Jelliette:W,Jellroy:WD,Jetragon:R,Jolthog:E,Jolthog Cryst:I,Jormuntide:RW,Jormuntide Ignis:RF,Katress:D,Katress Ignis:DF,Kelpsea:W,Kelpsea Ignis:F,Kikit:O,Killamari:DW,Killamari Primo:NW,Kingpaca:N,Kingpaca Cryst:I,Kitsun:F,Kitsun Noct:D,Knocklem:O,Knocklem Ignis:F,Lamball:N,Lapiron:O,Lapure:N,Leafan:G,Leezpunk:D,Leezpunk Ignis:F,Lifmunk:G,Loomen:DF,Loupmoon:D,Loupmoon Cryst:I,Lovander:D,Lullu:G,Lunaris:N,Lyleen:G,Lyleen Noct:D,Majex:DF,Mammorest:GO,Mammorest Cryst:IO,Maraith:D,Mau:D,Mau Cryst:I,Melpaca:N,Menasting:DO,Menasting Terra:O,Mimog:N,Moldron:FO,Moldron Cryst:IO,Mossanda:G,Mossanda Lux:E,Mozzarina:N,Muffly:I,Munchill:IW,Mycora:G,Necromus:D,Needoll:G,Needoll Noct:DG,Neptilius:W,Nitemary:D,Nitemary Botan:G,Nitewing:N,Nox:D,Nyafia:D,Omascul:D,Ophydia:GW,Orserk:RE,Paladius:N,Palumba:G,Panthalus:W,Pengullet:WI,Pengullet Lux:WE,Penking:WI,Penking Lux:WE,Petallia:G,Petallia Ignis:GF,Pierdon:O,Pierdon Cryst:I,Polapup:IW,Polapup Terra:IO,Prixter:DO,Prixter Lux:EO,Prunelia:GD,Puffolt:E,Pupperai:O,Pyrin:F,Pyrin Noct:FD,Quivern:R,Quivern Botan:RG,Ragnahawk:F,Rayhound:E,Rayhound Cryst:I,Reindrix:I,Relaxaurus:RW,Relaxaurus Lux:RE,Renjishi:F,Reptyro:FO,Reptyro Cryst:IO,Ribbuny:N,Ribbuny Botan:G,Robinquill:G,Robinquill Terra:GO,Rooby:F,Roujay:D,Rushoar:O,Sekhmet:O,Selyne:DN,Shadowbeak:D,Shaolong:RW,Shroomer:G,Shroomer Noct:GD,Sibelyx:I,Sibelyx Primo:N,Silvance:G,Silvegis:R,Skutlass:W,Skutlass Ignis:WF,Slowatt:E,Smokie:D,Smokie Cryst:DI,Snock:E,Snock Terra:EO,Snugloo:I,Solenne:DN,Solmora:W,Solmora Lux:WE,Sootseer:DF,Souffline:G,Sparkit:E,Splatterina:D,Starryon:D,Starryon Primo:N,Surfent:W,Surfent Terra:O,Suzaku:F,Suzaku Aqua:W,Swee:I,Sweepa:I,Tanzee:G,Tanzee Ignis:F,Tarantriss:D,Teafant:W,Tetroise:O,Tetroise Primo:N,Tocotoco:N,Tombat:D,Tropicaw:G,Turtacle:W,Turtacle Terra:WO,Univolt:E,Univolt Cryst:I,Vaelet:G,Valentail:N,Vanwyrm:FD,Vanwyrm Cryst:ID,Venusa:D,Verdash:G,Vixy:N,Warsect:OG,Warsect Terra:O,Whalaska:IW,Whalaska Ignis:IF,Wispaw:D,Wistella:D,Wixen:F,Wixen Noct:FD,Woolipop:N,Woolipop Terra:O,Wumpo:I,Wumpo Botan:G,Xenogard:R,Xenolord:DR,Xenovader:D,Yakumo:N`;
+const PALS=RAW.split(',').map(s=>{const [name,e]=s.split(':');return{name,slug:name.toLowerCase().replace(/ /g,'-'),els:[...e]}});
+const BY=Object.fromEntries(PALS.map(p=>[p.slug,p]));
+
+let picks={};
+try{picks=JSON.parse(localStorage.getItem('pw-picks')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('pw-picks',JSON.stringify(picks))}catch(e){}};
+
+// Portraits live in images/<slug>.<ext>; try each extension in turn.
+const EXT=['webp','png','jpg'],cache={};
+function loadImg(slug){
+  return cache[slug]||(cache[slug]=new Promise(res=>{
+    let i=0;const im=new Image();
+    im.onload=()=>res(im);
+    im.onerror=()=>{++i<EXT.length?im.src=`images/${slug}.${EXT[i]}`:res(null)};
+    im.src=`images/${slug}.${EXT[0]}`;
+  }));
+}
+function portrait(slug){
+  const img=document.createElement('img');img.alt='';img.hidden=true;
+  loadImg(slug).then(im=>{if(im){img.src=im.src;img.hidden=false}});
+  return img;
+}
+
+const $=id=>document.getElementById(id);
+let cur=null;
+
+function render(){
+  const g=$('grid');g.innerHTML='';
+  for(const e of ORDER){
+    const b=document.createElement('button');
+    b.className='cell';b.style.background=EL[e][1];
+    b.setAttribute('aria-label',`Choose favorite ${EL[e][0]} Pal`);
+    const t=document.createElement('span');t.className='el';t.textContent=EL[e][0];b.append(t);
+    const p=BY[picks[e]];
+    if(p){b.append(portrait(p.slug));const n=document.createElement('span');n.className='nm';n.textContent=p.name;b.append(n)}
+    else{const s=document.createElement('span');s.className='plus';s.textContent='+';b.append(s);const n=document.createElement('span');n.className='nm';b.append(n)}
+    b.onclick=()=>openPicker(e);
+    g.append(b);
+  }
+}
+
+function openPicker(e){
+  cur=e;$('dt').textContent=EL[e][0];$('q').value='';fill();$('dlg').showModal();
+}
+function fill(){
+  const q=$('q').value.trim().toLowerCase(),l=$('list');l.innerHTML='';
+  for(const p of PALS){
+    if(!p.els.includes(cur)||!p.name.toLowerCase().includes(q))continue;
+    const b=document.createElement('button');b.className='pick';
+    b.append(portrait(p.slug));
+    b.append(p.name);
+    b.onclick=()=>{picks[cur]=p.slug;save();$('dlg').close();render()};
+    l.append(b);
+  }
+}
+$('q').oninput=fill;
+$('x').onclick=()=>$('dlg').close();
+$('clr').onclick=()=>{delete picks[cur];save();$('dlg').close();render()};
+$('reset').onclick=()=>{if(confirm('Clear all picks?')){picks={};save();render()}};
+
+async function download(){
+  const S=360,G=24,P=48,TOP=110,W=P*2+S*3+G*2,H=P+TOP+S*3+G*2+P;
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  x.fillStyle='#f4f1ec';x.fillRect(0,0,W,H);
+  x.fillStyle='#1e2430';x.textAlign='center';
+  x.font='700 46px system-ui,sans-serif';x.fillText('My Favorite Pals by Element',W/2,P+50);
+  for(let i=0;i<9;i++){
+    const e=ORDER[i],cx=P+(i%3)*(S+G),cy=P+TOP+Math.floor(i/3)*(S+G);
+    x.fillStyle=EL[e][1];x.beginPath();x.roundRect(cx,cy,S,S,24);x.fill();
+    x.fillStyle='#fff';x.font='700 30px system-ui,sans-serif';x.fillText(EL[e][0],cx+S/2,cy+42);
+    const p=BY[picks[e]];
+    if(p){
+      const im=await loadImg(p.slug);
+      if(im){const w=S-40,h=S-120,k=Math.min(w/im.width,h/im.height),iw=im.width*k,ih=im.height*k;
+        x.drawImage(im,cx+(S-iw)/2,cy+56+(h-ih)/2,iw,ih)}
+      x.font='600 26px system-ui,sans-serif';x.fillText(p.name,cx+S/2,cy+S-22);
+    }else{x.globalAlpha=.4;x.font='700 110px system-ui,sans-serif';x.fillText('?',cx+S/2,cy+S/2+40);x.globalAlpha=1}
+  }
+  try{
+    c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='palworld-favorites.png';a.click()});
+  }catch(err){alert('Could not save the image. If you opened this file directly from your computer, view it through the GitHub Pages link instead.')}
+}
+$('dl').onclick=download;
+render();
+</script>
+</body>
+</html>
