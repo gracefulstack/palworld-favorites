@@ -15,8 +15,10 @@ h1{font-size:1.6rem;margin:0 0 4px}
 .cell{aspect-ratio:1;border:0;border-radius:14px;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px;font:inherit;min-width:0}
 .cell:focus-visible,.pick:focus-visible,.act:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .cell .el{font-weight:700}
-.cell img{flex:1;min-height:0;max-width:100%;object-fit:contain}
+.cell .art{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.cell .art img{max-width:100%;max-height:100%;width:auto;height:auto}
 .cell .nm{font-size:.85rem;font-weight:600;min-height:1.2em;text-align:center}
+.meta{font-size:.72rem;font-weight:400;opacity:.9}
 .cell .plus{flex:1;display:grid;place-items:center;opacity:.8;font-size:2.4rem}
 .bar{display:flex;gap:10px;margin-top:16px}
 .act{padding:10px 18px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:#fff;font:inherit;font-weight:600;cursor:pointer}
@@ -29,20 +31,21 @@ dialog::backdrop{background:rgba(20,24,32,.55)}
 .dh input{flex:1;min-width:0;padding:8px 10px;border:2px solid #cfc9bf;border-radius:8px;font:inherit}
 .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;overflow:auto;max-height:60vh}
 .pick{border:2px solid #e2ddd4;background:#faf8f5;border-radius:10px;padding:6px;cursor:pointer;font:inherit;font-size:.78rem;display:flex;flex-direction:column;align-items:center;gap:4px}
-.pick img{width:72px;height:72px;object-fit:contain}
+.pick .art{height:72px;display:flex;align-items:center;justify-content:center}
+.pick img{max-width:72px;max-height:72px;width:auto;height:auto}
+.pick .meta{color:#5b6270}
 .pick:hover{border-color:var(--ink)}
 </style>
 </head>
 <body>
 <main>
-<h1>My favorite Pals by element</h1>
-<p class="sub">Tap a square to choose your favorite. Dual-element Pals show up under both elements.</p>
+<h1>Favorite Pals by element</h1>
+<p class="sub">Tap a square to choose your favorite for that element. Dual-element Pals show up under both elements.</p>
 <div id="grid"></div>
 <div class="bar">
   <button class="act" id="dl">Download image</button>
   <button class="act ghost" id="reset">Clear all</button>
 </div>
-<footer>Unofficial fan project. Pal artwork and names belong to Pocket Pair, Inc.</footer>
 </main>
 
 <dialog id="dlg">
@@ -59,8 +62,11 @@ dialog::backdrop{background:rgba(20,24,32,.55)}
 // N Neutral, F Fire, W Water, G Grass, E Electric, I Ice, O Ground, D Dark, R Dragon (first letter = primary element)
 const EL={N:['Neutral','#8f8677'],F:['Fire','#e5533d'],W:['Water','#3b86d8'],G:['Grass','#4fae5a'],E:['Electric','#d99a00'],I:['Ice','#4aa8c9'],O:['Ground','#a3733b'],D:['Dark','#5a4a78'],R:['Dragon','#b53a6b']};
 const ORDER='NFWGEIODR';
-const RAW=`Aegidron:RO,Amione:W,Anubis:O,Arsox:F,Astegon:RD,Azurmane:E,Azurobe:WR,Azurobe Cryst:IR,Bakemi:D,Bastigor:I,Beakon:E,Beakon Cryst:I,Beegarde:G,Bellanoir:D,Bellanoir Libero:D,Blazamut:F,Blazamut Ryu:RF,Blazehowl:F,Blazehowl Noct:FD,Braloha:GO,Bristla:G,Broncherry:G,Broncherry Aqua:GW,Bulldosu:O,Bushi:F,Bushi Noct:FD,Caprity:G,Caprity Noct:D,Carnibora:G,Cattiva:N,Cawgnito:D,Celaray:W,Celaray Lux:WE,Celesdir:N,Celesdir Noct:D,Chikipi:N,Chillet:IR,Chillet Ignis:FR,Cinnamoth:G,Clovee:GN,Cremis:N,Croajiro:W,Croajiro Noct:WD,Cryolinx:I,Cryolinx Terra:O,Daedream:D,Dandilord:GD,Dazemu:O,Dazzi:E,Dazzi Noct:DE,Depresso:D,Digtoise:O,Dinossom:GR,Dinossom Lux:ER,Direhowl:N,Dogen:N,Dualith:OG,Dualith Noct:OD,Dumud:OW,Dumud Gild:OW,Dupin:F,Dynamoff:E,Eidrolon:RD,Eidrolon Ignis:RF,Eikthyrdeer:N,Eikthyrdeer Terra:O,Elgrove:G,Elgrove Cryst:I,Elizabee:G,Elphidran:R,Elphidran Aqua:RW,Faleris:F,Faleris Aqua:W,Felbat:D,Fenglope:N,Fenglope Lux:E,Finsider:W,Finsider Ignis:WF,Flambelle:F,Flaracle:F,Flopie:G,Foxcicle:I,Foxparks:F,Foxparks Cryst:I,Frostallion:I,Frostallion Noct:D,Frostplume:I,Fuack:W,Fuack Ignis:WF,Fuddler:O,Galeclaw:N,Ghangler:DW,Ghangler Ignis:FW,Gildane:O,Gildra:DO,Gloopie:WD,Gloopie Primo:WN,Gobfin:W,Gobfin Ignis:F,Gorirat:N,Gorirat Terra:O,Grintale:N,Grizzbolt:E,Gumoss:GO,Hangyu:O,Hangyu Cryst:I,Hartalis:N,Helzephyr:D,Helzephyr Lux:DE,Herbil:GN,Hoocrates:D,Hoodle:D,Icelyn:I,Incineram:FD,Incineram Noct:D,Jelliette:W,Jellroy:WD,Jetragon:R,Jolthog:E,Jolthog Cryst:I,Jormuntide:RW,Jormuntide Ignis:RF,Katress:D,Katress Ignis:DF,Kelpsea:W,Kelpsea Ignis:F,Kikit:O,Killamari:DW,Killamari Primo:NW,Kingpaca:N,Kingpaca Cryst:I,Kitsun:F,Kitsun Noct:D,Knocklem:O,Knocklem Ignis:F,Lamball:N,Lapiron:O,Lapure:N,Leafan:G,Leezpunk:D,Leezpunk Ignis:F,Lifmunk:G,Loomen:DF,Loupmoon:D,Loupmoon Cryst:I,Lovander:D,Lullu:G,Lunaris:N,Lyleen:G,Lyleen Noct:D,Majex:DF,Mammorest:GO,Mammorest Cryst:IO,Maraith:D,Mau:D,Mau Cryst:I,Melpaca:N,Menasting:DO,Menasting Terra:O,Mimog:N,Moldron:FO,Moldron Cryst:IO,Mossanda:G,Mossanda Lux:E,Mozzarina:N,Muffly:I,Munchill:IW,Mycora:G,Necromus:D,Needoll:G,Needoll Noct:DG,Neptilius:W,Nitemary:D,Nitemary Botan:G,Nitewing:N,Nox:D,Nyafia:D,Omascul:D,Ophydia:GW,Orserk:RE,Paladius:N,Palumba:G,Panthalus:W,Pengullet:WI,Pengullet Lux:WE,Penking:WI,Penking Lux:WE,Petallia:G,Petallia Ignis:GF,Pierdon:O,Pierdon Cryst:I,Polapup:IW,Polapup Terra:IO,Prixter:DO,Prixter Lux:EO,Prunelia:GD,Puffolt:E,Pupperai:O,Pyrin:F,Pyrin Noct:FD,Quivern:R,Quivern Botan:RG,Ragnahawk:F,Rayhound:E,Rayhound Cryst:I,Reindrix:I,Relaxaurus:RW,Relaxaurus Lux:RE,Renjishi:F,Reptyro:FO,Reptyro Cryst:IO,Ribbuny:N,Ribbuny Botan:G,Robinquill:G,Robinquill Terra:GO,Rooby:F,Roujay:D,Rushoar:O,Sekhmet:O,Selyne:DN,Shadowbeak:D,Shaolong:RW,Shroomer:G,Shroomer Noct:GD,Sibelyx:I,Sibelyx Primo:N,Silvance:G,Silvegis:R,Skutlass:W,Skutlass Ignis:WF,Slowatt:E,Smokie:D,Smokie Cryst:DI,Snock:E,Snock Terra:EO,Snugloo:I,Solenne:DN,Solmora:W,Solmora Lux:WE,Sootseer:DF,Souffline:G,Sparkit:E,Splatterina:D,Starryon:D,Starryon Primo:N,Surfent:W,Surfent Terra:O,Suzaku:F,Suzaku Aqua:W,Swee:I,Sweepa:I,Tanzee:G,Tanzee Ignis:F,Tarantriss:D,Teafant:W,Tetroise:O,Tetroise Primo:N,Tocotoco:N,Tombat:D,Tropicaw:G,Turtacle:W,Turtacle Terra:WO,Univolt:E,Univolt Cryst:I,Vaelet:G,Valentail:N,Vanwyrm:FD,Vanwyrm Cryst:ID,Venusa:D,Verdash:G,Vixy:N,Warsect:OG,Warsect Terra:O,Whalaska:IW,Whalaska Ignis:IF,Wispaw:D,Wistella:D,Wixen:F,Wixen Noct:FD,Woolipop:N,Woolipop Terra:O,Wumpo:I,Wumpo Botan:G,Xenogard:R,Xenolord:DR,Xenovader:D,Yakumo:N`;
-const PALS=RAW.split(',').map(s=>{const [name,e]=s.split(':');return{name,slug:name.toLowerCase().replace(/ /g,'-'),els:[...e]}});
+const RAW=`Aegidron:RO:184,Amione:W:47,Anubis:O:139,Arsox:F:58,Astegon:RD:158,Azurmane:E:161,Azurobe:WR:41,Azurobe Cryst:IR:41B,Bakemi:D:168,Bastigor:I:191,Beakon:E:96,Beakon Cryst:I:96B,Beegarde:G:67,Bellanoir:D:195,Bellanoir Libero:D:195B,Blazamut:F:137,Blazamut Ryu:RF:137B,Blazehowl:F:112,Blazehowl Noct:FD:112B,Braloha:GO:110,Bristla:G:60,Broncherry:G:108,Broncherry Aqua:GW:108B,Bulldosu:O:156,Bushi:F:85,Bushi Noct:FD:85B,Caprity:G:34,Caprity Noct:D:34B,Carnibora:G:136,Cattiva:N:2,Cawgnito:D:57,Celaray:W:7,Celaray Lux:WE:7B,Celesdir:N:157,Celesdir Noct:D:157B,Chikipi:N:3,Chillet:IR:103,Chillet Ignis:FR:103B,Cinnamoth:G:61,Clovee:GN:14,Cremis:N:8,Croajiro:W:9,Croajiro Noct:WD:9B,Cryolinx:I:132,Cryolinx Terra:O:132B,Daedream:D:22,Dandilord:GD:194,Dazemu:O:123,Dazzi:E:92,Dazzi Noct:DE:92B,Depresso:D:16,Digtoise:O:107,Dinossom:GR:84,Dinossom Lux:ER:84B,Direhowl:N:33,Dogen:N:155,Dualith:OG:138,Dualith Noct:OD:138B,Dumud:OW:109,Dumud Gild:OW:109B,Dupin:F:176,Dynamoff:E:172,Eidrolon:RD:171,Eidrolon Ignis:RF:171B,Eikthyrdeer:N:32,Eikthyrdeer Terra:O:32B,Elgrove:G:81,Elgrove Cryst:I:81B,Elizabee:G:68,Elphidran:R:63,Elphidran Aqua:RW:63B,Faleris:F:188,Faleris Aqua:W:188B,Felbat:D:65,Fenglope:N:83,Fenglope Lux:E:83B,Finsider:W:88,Finsider Ignis:WF:88B,Flambelle:F:25,Flaracle:F:174,Flopie:G:77,Foxcicle:I:95,Foxparks:F:29,Foxparks Cryst:I:29B,Frostallion:I:200,Frostallion Noct:D:200B,Frostplume:I:114,Fuack:W:5,Fuack Ignis:WF:5B,Fuddler:O:31,Galeclaw:N:49,Ghangler:DW:97,Ghangler Ignis:FW:97B,Gildane:O:154,Gildra:DO:120,Gloopie:WD:48,Gloopie Primo:WN:48B,Gobfin:W:55,Gobfin Ignis:F:55B,Gorirat:N:74,Gorirat Terra:O:74B,Grintale:N:70,Grizzbolt:E:185,Gumoss:GO:12,Hangyu:O:38,Hangyu Cryst:I:38B,Hartalis:N:197,Helzephyr:D:80,Helzephyr Lux:DE:80B,Herbil:GN:10,Hoocrates:D:19,Hoodle:D:166,Icelyn:I:119,Incineram:FD:91,Incineram Noct:D:91B,Jelliette:W:45,Jellroy:WD:46,Jetragon:R:202,Jolthog:E:15,Jolthog Cryst:I:15B,Jormuntide:RW:121,Jormuntide Ignis:RF:121B,Katress:D:79,Katress Ignis:DF:79B,Kelpsea:W:43,Kelpsea Ignis:F:43B,Kikit:O:126,Killamari:DW:30,Killamari Primo:NW:30B,Kingpaca:N:21,Kingpaca Cryst:I:21B,Kitsun:F:111,Kitsun Noct:D:111B,Knocklem:O:159,Knocklem Ignis:F:159B,Lamball:N:1,Lapiron:O:165,Lapure:N:170,Leafan:G:90,Leezpunk:D:73,Leezpunk Ignis:F:73B,Lifmunk:G:4,Loomen:DF:180,Loupmoon:D:56,Loupmoon Cryst:I:56B,Lovander:D:69,Lullu:G:125,Lunaris:N:82,Lyleen:G:186,Lyleen Noct:D:186B,Majex:DF:115,Mammorest:GO:87,Mammorest Cryst:IO:87B,Maraith:D:117,Mau:D:27,Mau Cryst:I:27B,Melpaca:N:20,Menasting:DO:99,Menasting Terra:O:99B,Mimog:N:144,Moldron:FO:105,Moldron Cryst:IO:105B,Mossanda:G:102,Mossanda Lux:E:102B,Mozzarina:N:40,Muffly:I:59,Munchill:IW:86,Mycora:G:179,Necromus:D:199,Needoll:G:100,Needoll Noct:DG:100B,Neptilius:W:201,Nitemary:D:148,Nitemary Botan:G:148B,Nitewing:N:51,Nox:D:24,Nyafia:D:143,Omascul:D:150,Ophydia:GW:175,Orserk:RE:187,Paladius:N:198,Palumba:G:106,Panthalus:W:203,Pengullet:WI:17,Pengullet Lux:WE:17B,Penking:WI:18,Penking Lux:WE:18B,Petallia:G:89,Petallia Ignis:GF:89B,Pierdon:O:131,Pierdon Cryst:I:131B,Polapup:IW:72,Polapup Terra:IO:72B,Prixter:DO:141,Prixter Lux:EO:141B,Prunelia:GD:147,Puffolt:E:62,Pupperai:O:13,Pyrin:F:93,Pyrin Noct:FD:93B,Quivern:R:124,Quivern Botan:RG:124B,Ragnahawk:F:104,Rayhound:E:98,Rayhound Cryst:I:98B,Reindrix:I:101,Relaxaurus:RW:94,Relaxaurus Lux:RE:94B,Renjishi:F:183,Reptyro:FO:129,Reptyro Cryst:IO:129B,Ribbuny:N:44,Ribbuny Botan:G:44B,Robinquill:G:76,Robinquill Terra:GO:76B,Rooby:F:26,Roujay:D:177,Rushoar:O:28,Sekhmet:O:140,Selyne:DN:190,Shadowbeak:D:189,Shaolong:RW:192,Shroomer:G:118,Shroomer Noct:GD:118B,Sibelyx:I:116,Sibelyx Primo:N:116B,Silvance:G:193,Silvegis:R:160,Skutlass:W:128,Skutlass Ignis:WF:128B,Slowatt:E:167,Smokie:D:149,Smokie Cryst:DI:149B,Snock:E:163,Snock Terra:EO:163B,Snugloo:I:133,Solenne:DN:182,Solmora:W:169,Solmora Lux:WE:169B,Sootseer:DF:135,Souffline:G:164,Sparkit:E:42,Splatterina:D:153,Starryon:D:130,Starryon Primo:N:130B,Surfent:W:75,Surfent Terra:O:75B,Suzaku:F:122,Suzaku Aqua:W:122B,Swee:I:35,Sweepa:I:36,Tanzee:G:23,Tanzee Ignis:F:23B,Tarantriss:D:71,Teafant:W:11,Tetroise:O:142,Tetroise Primo:N:142B,Tocotoco:N:53,Tombat:D:52,Tropicaw:G:173,Turtacle:W:37,Turtacle Terra:WO:37B,Univolt:E:54,Univolt Cryst:I:54B,Vaelet:G:66,Valentail:N:162,Vanwyrm:FD:64,Vanwyrm Cryst:ID:64B,Venusa:D:178,Verdash:G:152,Vixy:N:6,Warsect:OG:113,Warsect Terra:O:113B,Whalaska:IW:151,Whalaska Ignis:IF:151B,Wispaw:D:50,Wistella:D:181,Wixen:F:78,Wixen Noct:FD:78B,Woolipop:N:39,Woolipop Terra:O:39B,Wumpo:I:134,Wumpo Botan:G:134B,Xenogard:R:146,Xenolord:DR:196,Xenovader:D:145,Yakumo:N:127`;
+const PALS=RAW.split(',').map(s=>{const [name,e,num]=s.split(':');return{name,num,slug:name.toLowerCase().replace(/ /g,'-'),els:[...e]}}).sort((a,b)=>parseInt(a.num)-parseInt(b.num)||a.num.localeCompare(b.num));
+const label=p=>'#'+p.num.replace(/^\d+/,d=>d.padStart(3,'0'));
+const types=p=>p.els.map(e=>EL[e][0]).join(' / ');
+const info=p=>label(p)+' \u00b7 '+types(p);
 const BY=Object.fromEntries(PALS.map(p=>[p.slug,p]));
 
 let picks={};
@@ -78,9 +84,10 @@ function loadImg(slug){
   }));
 }
 function portrait(slug){
-  const img=document.createElement('img');img.alt='';img.hidden=true;
+  const box=document.createElement('div');box.className='art';
+  const img=document.createElement('img');img.alt='';img.hidden=true;box.append(img);
   loadImg(slug).then(im=>{if(im){img.src=im.src;img.hidden=false}});
-  return img;
+  return box;
 }
 
 const $=id=>document.getElementById(id);
@@ -94,7 +101,7 @@ function render(){
     b.setAttribute('aria-label',`Choose favorite ${EL[e][0]} Pal`);
     const t=document.createElement('span');t.className='el';t.textContent=EL[e][0];b.append(t);
     const p=BY[picks[e]];
-    if(p){b.append(portrait(p.slug));const n=document.createElement('span');n.className='nm';n.textContent=p.name;b.append(n)}
+    if(p){b.append(portrait(p.slug));const n=document.createElement('span');n.className='nm';n.append(p.name);const m=document.createElement('div');m.className='meta';m.textContent=info(p);n.append(m);b.append(n)}
     else{const s=document.createElement('span');s.className='plus';s.textContent='+';b.append(s);const n=document.createElement('span');n.className='nm';b.append(n)}
     b.onclick=()=>openPicker(e);
     g.append(b);
@@ -107,10 +114,11 @@ function openPicker(e){
 function fill(){
   const q=$('q').value.trim().toLowerCase(),l=$('list');l.innerHTML='';
   for(const p of PALS){
-    if(!p.els.includes(cur)||!p.name.toLowerCase().includes(q))continue;
+    if(!p.els.includes(cur)||!(p.name+' '+label(p)).toLowerCase().includes(q))continue;
     const b=document.createElement('button');b.className='pick';
     b.append(portrait(p.slug));
     b.append(p.name);
+    const m=document.createElement('span');m.className='meta';m.textContent=info(p);b.append(m);
     b.onclick=()=>{picks[cur]=p.slug;save();$('dlg').close();render()};
     l.append(b);
   }
@@ -121,12 +129,12 @@ $('clr').onclick=()=>{delete picks[cur];save();$('dlg').close();render()};
 $('reset').onclick=()=>{if(confirm('Clear all picks?')){picks={};save();render()}};
 
 async function download(){
-  const S=360,G=24,P=48,TOP=110,W=P*2+S*3+G*2,H=P+TOP+S*3+G*2+P;
+  const S=300,G=24,P=48,TOP=110,W=P*2+S*3+G*2,H=P+TOP+S*3+G*2+P;
   const c=document.createElement('canvas');c.width=W;c.height=H;
   const x=c.getContext('2d');
   x.fillStyle='#f4f1ec';x.fillRect(0,0,W,H);
   x.fillStyle='#1e2430';x.textAlign='center';
-  x.font='700 46px system-ui,sans-serif';x.fillText('My Favorite Pals by Element',W/2,P+50);
+  x.font='700 46px system-ui,sans-serif';x.fillText('Favorite Pals by Element',W/2,P+50);
   for(let i=0;i<9;i++){
     const e=ORDER[i],cx=P+(i%3)*(S+G),cy=P+TOP+Math.floor(i/3)*(S+G);
     x.fillStyle=EL[e][1];x.beginPath();x.roundRect(cx,cy,S,S,24);x.fill();
@@ -134,9 +142,9 @@ async function download(){
     const p=BY[picks[e]];
     if(p){
       const im=await loadImg(p.slug);
-      if(im){const w=S-40,h=S-120,k=Math.min(w/im.width,h/im.height),iw=im.width*k,ih=im.height*k;
+      if(im){const w=S-40,h=S-130,k=Math.min(1,w/im.width,h/im.height),iw=im.width*k,ih=im.height*k;
         x.drawImage(im,cx+(S-iw)/2,cy+56+(h-ih)/2,iw,ih)}
-      x.font='600 26px system-ui,sans-serif';x.fillText(p.name,cx+S/2,cy+S-22);
+      x.font='600 26px system-ui,sans-serif';x.fillText(p.name,cx+S/2,cy+S-46);x.font='400 20px system-ui,sans-serif';x.fillText(info(p),cx+S/2,cy+S-16);
     }else{x.globalAlpha=.4;x.font='700 110px system-ui,sans-serif';x.fillText('?',cx+S/2,cy+S/2+40);x.globalAlpha=1}
   }
   try{
